@@ -174,37 +174,7 @@ class PlayerControls(QWidget):
         layout.addWidget(self.rateBox)
         self.setLayout(layout)
 
-    def state(self, line):
-        contador_play_pause = 0
-        contador_boton_on_off = 0
-        if (line == "0xFFA25D"):
-            contador_boton_on_off += 1 
-            if  contador_boton_on_off%2 == 0:
-                self.playerState = "apagado"
-            else:
-                self.estado = "encendido"
-        elif (line == "0xFFE21D"):
-            self.estado = "silenciar"
-        elif (line == "0xFF22DD"):
-            contador_play_pause += 1 
-            if  contador_play_pause%2 == 0:
-                self.playerState = "pausa"
-                #self.pause.emit()
-            else:
-               self.playerState = "play"
-               #self.play.emit()
-        elif (line == "0xFF02FD"):
-                self.playerState = "rebobinar"
-        elif (line == "0xFFC23D"):
-                self.playerState = "adelantar"
-        elif (line == "0xFF906F"):
-                self.playerState = "subir_volumen"
-        elif (line == "0xFFA857"):
-                self.playerState = "bajar_volumen"
-        elif (line == "0xFF9867"):
-                self.playerState = "shuffle"
-        else:
-           print (" Intenta nuevamente")
+    def state(self):
         return self.playerState
 
     # INTERFAZ QUE SE ENCUENTRA POR DEFECTO 
@@ -693,7 +663,7 @@ if __name__ == '__main__':
             player = Player(sys.argv[1:])
             player.show()
             sys.exit(app.exec_())
-            
+
     # CÖDIGO QUE SE UTILIZARÄ DESPUËS 
     estado_play = ""
     contador_play_pause = 0
