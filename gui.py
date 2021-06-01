@@ -126,10 +126,11 @@ class PlayerControls(QWidget):
     changeVolume = pyqtSignal(int)
     changeMuting = pyqtSignal(bool)
     changeRate = pyqtSignal(float)
+    estado = pyqtSignal()
 
     def __init__(self, parent=None):
         super(PlayerControls, self).__init__(parent)
-
+        
         self.playerState = QMediaPlayer.StoppedState
         self.playerMuted = False
 
@@ -174,20 +175,44 @@ class PlayerControls(QWidget):
         self.setLayout(layout)
         
     def conexionArduino(self):
-        variable_estado = "" #QAction()
-        contador_play_pausa = 0
+        contador_play_pause = 0
+        contador_boton_on_off = 0
         ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
         ser.flush()
         while True:
             if ser.in_waiting > 0:
-                line =ser.readline().decode('utf-8').rstrip()
-                if line == "FF22DD":
-                    if contador_play_pausa%2 != 0:
-                        play_pausa = QAction("play", self)
+                line = ser.readline().decode('utf-8').rstrip()
+                #print(line)
+                if (line == "0xFFA25D"):
+                    contador_boton_on_off += 1 
+                    if  contador_boton_on_off%2 == 0:
+                        self.estado = "apagado"
                     else:
-                        play_pausa = QAction("pausa", self)
-                    contador_play_pausa += 1
-            #play_pausa.triggered.connect(lambda: controles.setState(play_pausa))
+                        self.estado = "encendido"
+                    #print("entre")
+                elif (line == "0xFFE21D"):
+                    self.estado = "silenciar"
+                elif (line == "0xFF22DD"):
+                    contador_play_pause += 1 
+                    if  contador_play_pause%2 == 0:
+                        self.estado = "pausa"
+                    else:
+                        self.estado = "play"
+                elif (line == "0xFF02FD"):
+                    self.estado = "rebobinar"
+                elif (line == "0xFFC23D"):
+                    self.estado = "adelantar"
+                elif (line == "0xFF906F"):
+                    self.estado = "subir_volumen"
+                elif (line == "0xFFA857"):
+                    self.estado = "bajar_volumen"
+                elif (line == "0xFF9867"):
+                    self.estado = "shuffle"
+                else:
+                    print (" Intenta nuevamente")
+                self.setState(self.estado)
+                #print(self.estado)
+                #play_pausa.triggered.connect(lambda: controles.setState(play_pausa))
 
 
     def state(self):
@@ -195,28 +220,22 @@ class PlayerControls(QWidget):
 
     # INTERFAZ QUE SE ENCUENTRA POR DEFECTO 
     def setState(self,state):
-#         pausa_play = "FF22DD"
-#         contador = 0
-        
         if state != self.playerState:
             self.playerState = state
-
             if state == QMediaPlayer.StoppedState:
                 self.stopButton.setEnabled(False)
                 self.playButton.setIcon(
                         self.style().standardIcon(QStyle.SP_MediaPlay))
 
-            elif state == QMediaPlayer.PlayingState: #or (state == pausa_play and contador%2 != 0):
+            elif state == QMediaPlayer.PlayingState:
                 self.stopButton.setEnabled(True)
                 self.playButton.setIcon(
                         self.style().standardIcon(QStyle.SP_MediaPause))
-                print ("Play ha sido presionado; michi autosuficiente")
             elif state == QMediaPlayer.PausedState: # or (state == pausa_play and contador%2 == 0):
                 self.stopButton.setEnabled(True)
                 self.playButton.setIcon(
                         self.style().standardIcon(QStyle.SP_MediaPlay))
-                print ("Pausa ha sido presionado; michi no autosuficiente")
-            #contador += 1
+        
     def volume(self):
         return self.volumeSlider.value()
 
@@ -668,6 +687,9 @@ class Player(QWidget):
 
 
 if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    controles = PlayerControls()
+    controles.conexionArduino()
     controles.playClicked()
     player = Player(sys.argv[1:])
     player.show()
