@@ -9,7 +9,7 @@ from PyQt5.QtMultimedia import (QAbstractVideoBuffer, QMediaContent,
         QMediaMetaData, QMediaPlayer, QMediaPlaylist, QVideoFrame, QVideoProbe)
 
 from PyQt5.QtMultimediaWidgets import QVideoWidget
-from PyQt5.QtWidgets import (QApplication, QComboBox, QDialog, QFileDialog,
+from PyQt5.QtWidgets import (QAction, QApplication, QComboBox, QDialog, QFileDialog,
         QFormLayout, QHBoxLayout, QLabel, QListView, QMessageBox, QPushButton,
         QSizePolicy, QSlider, QStyle, QToolButton, QVBoxLayout, QWidget)
 
@@ -173,12 +173,33 @@ class PlayerControls(QWidget):
         layout.addWidget(self.volumeSlider)
         layout.addWidget(self.rateBox)
         self.setLayout(layout)
+    def conexionArduino(self):
+        variable_estado = 
+        contador_play_pausa = 0
+        ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
+        ser.flush()
+        while True:
+            if ser.in_waiting > 0:
+                app = QApplication(sys.argv)
+                controles = PlayerControls()
+                line =ser.readline().decode('utf-8').rstrip()
+                if line == "FF22DD":
+                    if contador_play_pausa%2 != 0:
+                        play_pausa = QAction("play", self)
+                    else:
+                        play_pausa = QAction("pausa", self)
+                    contador_play_pausa += 1
+            #play_pausa.triggered.connect(lambda: controles.setState(play_pausa))
+
 
     def state(self):
         return self.playerState
 
     # INTERFAZ QUE SE ENCUENTRA POR DEFECTO 
     def setState(self,state):
+#         pausa_play = "FF22DD"
+#         contador = 0
+        
         if state != self.playerState:
             self.playerState = state
 
@@ -186,15 +207,18 @@ class PlayerControls(QWidget):
                 self.stopButton.setEnabled(False)
                 self.playButton.setIcon(
                         self.style().standardIcon(QStyle.SP_MediaPlay))
-            elif state == QMediaPlayer.PlayingState:
+
+            elif state == QMediaPlayer.PlayingState: #or (state == pausa_play and contador%2 != 0):
                 self.stopButton.setEnabled(True)
                 self.playButton.setIcon(
                         self.style().standardIcon(QStyle.SP_MediaPause))
-            elif state == QMediaPlayer.PausedState:
+                print ("Play ha sido presionado; michi autosuficiente")
+            elif state == QMediaPlayer.PausedState: # or (state == pausa_play and contador%2 == 0):
                 self.stopButton.setEnabled(True)
                 self.playButton.setIcon(
                         self.style().standardIcon(QStyle.SP_MediaPlay))
-      
+                print ("Pausa ha sido presionado; michi no autosuficiente")
+            #contador += 1
     def volume(self):
         return self.volumeSlider.value()
 
@@ -345,7 +369,7 @@ class Player(QWidget):
 
     def __init__(self, playlist, parent=None):
         super(Player, self).__init__(parent)
-        self.line = line
+        #self.line = line
         self.colorDialog = None
         self.trackInfo = ""
         self.statusInfo = ""
@@ -646,15 +670,7 @@ class Player(QWidget):
 
 
 if __name__ == '__main__':
-    ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
-    ser.flush()
-    while True:
-        if ser.in_waiting > 0:
-            line =ser.readline().decode('utf-8').rstrip()
-            app = QApplication(sys.argv)
-            controles = PlayerControls()
-            lambda line=self.player.state():  controles.setState(self.player.state())
-            controles.playClicked()
-            player = Player(line, sys.argv[1:])
-            player.show()
-            sys.exit(app.exec_())
+    controles.playClicked()
+    player = Player(sys.argv[1:])
+    player.show()
+    sys.exit(app.exec_())
