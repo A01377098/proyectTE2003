@@ -118,6 +118,7 @@ class PlaylistModel(QAbstractItemModel):
 
 # ===============================================================================================
 class PlayerControls(QWidget):
+        
     play = pyqtSignal()          
     pause = pyqtSignal()
     stop = pyqtSignal()
@@ -126,14 +127,15 @@ class PlayerControls(QWidget):
     changeVolume = pyqtSignal(int)
     changeMuting = pyqtSignal(bool)
     changeRate = pyqtSignal(float)
-    estado = pyqtSignal()
+    estado_externa = pyqtSignal()    #Arduino
 
     def __init__(self, parent=None):
         super(PlayerControls, self).__init__(parent)
         
         self.playerState = QMediaPlayer.StoppedState
         self.playerMuted = False
-
+        
+        
         self.playButton = QToolButton(clicked=self.playClicked)
         self.playButton.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
 
@@ -195,9 +197,9 @@ class PlayerControls(QWidget):
                 elif (line == "0xFF22DD"):
                     contador_play_pause += 1 
                     if  contador_play_pause%2 == 0:
-                        self.estado = "pausa"
+                        self.estado = 2
                     else:
-                        self.estado = "play"
+                        self.estado = 1
                 elif (line == "0xFF02FD"):
                     self.estado = "rebobinar"
                 elif (line == "0xFFC23D"):
@@ -231,7 +233,8 @@ class PlayerControls(QWidget):
                 self.stopButton.setEnabled(True)
                 self.playButton.setIcon(
                         self.style().standardIcon(QStyle.SP_MediaPause))
-            elif state == QMediaPlayer.PausedState: # or (state == pausa_play and contador%2 == 0):
+                
+            elif state == QMediaPlayer.PausedState: 
                 self.stopButton.setEnabled(True)
                 self.playButton.setIcon(
                         self.style().standardIcon(QStyle.SP_MediaPlay))
