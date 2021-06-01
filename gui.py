@@ -127,10 +127,11 @@ class PlayerControls(QWidget):
     changeVolume = pyqtSignal(int)
     changeMuting = pyqtSignal(bool)
     changeRate = pyqtSignal(float)
-    estado_externa = pyqtSignal()    #Arduino
+    #estado_externa = pyqtSignal()    #Arduino
 
     def __init__(self, parent=None):
         super(PlayerControls, self).__init__(parent)
+        self.estado = 0
         
         self.playerState = QMediaPlayer.StoppedState
         self.playerMuted = False
@@ -185,33 +186,33 @@ class PlayerControls(QWidget):
             if ser.in_waiting > 0:
                 line = ser.readline().decode('utf-8').rstrip()
                 #print(line)
-                if (line == "0xFFA25D"):
-                    contador_boton_on_off += 1 
-                    if  contador_boton_on_off%2 == 0:
-                        self.estado = "apagado"
-                    else:
-                        self.estado = "encendido"
-                    #print("entre")
-                elif (line == "0xFFE21D"):
-                    self.estado = "silenciar"
-                elif (line == "0xFF22DD"):
+#                 if (line == "0xFFA25D"):
+#                     contador_boton_on_off += 1 
+#                     if  contador_boton_on_off%2 == 0:
+#                         self.estado = "apagado"
+#                     else:
+#                         self.estado = "encendido"
+#                     #print("entre")
+#                 elif (line == "0xFFE21D"):
+#                     self.estado = "silenciar"
+                if (line == "0xFF22DD"):
                     contador_play_pause += 1 
                     if  contador_play_pause%2 == 0:
                         self.estado = 2
                     else:
                         self.estado = 1
-                elif (line == "0xFF02FD"):
-                    self.estado = "rebobinar"
-                elif (line == "0xFFC23D"):
-                    self.estado = "adelantar"
-                elif (line == "0xFF906F"):
-                    self.estado = "subir_volumen"
-                elif (line == "0xFFA857"):
-                    self.estado = "bajar_volumen"
-                elif (line == "0xFF9867"):
-                    self.estado = "shuffle"
-                else:
-                    print (" Intenta nuevamente")
+#                 elif (line == "0xFF02FD"):
+#                     self.estado = "rebobinar"
+#                 elif (line == "0xFFC23D"):
+#                     self.estado = "adelantar"
+#                 elif (line == "0xFF906F"):
+#                     self.estado = "subir_volumen"
+#                 elif (line == "0xFFA857"):
+#                     self.estado = "bajar_volumen"
+#                 elif (line == "0xFF9867"):
+#                     self.estado = "shuffle"
+#                 else:
+#                     print (" Intenta nuevamente")
                 self.setState(self.estado)
                 #print(self.estado)
                 #play_pausa.triggered.connect(lambda: controles.setState(play_pausa))
@@ -224,7 +225,7 @@ class PlayerControls(QWidget):
     def setState(self,state):
         if state != self.playerState:
             self.playerState = state
-            if state == QMediaPlayer.StoppedState:
+            if  state == QMediaPlayer.StoppedState or state == 1:
                 self.stopButton.setEnabled(False)
                 self.playButton.setIcon(
                         self.style().standardIcon(QStyle.SP_MediaPlay))
@@ -257,11 +258,9 @@ class PlayerControls(QWidget):
                             QStyle.SP_MediaVolumeMuted if muted else QStyle.SP_MediaVolume))
 
     def playClicked(self):
-        contador_veces_boton = 0
-        if self.playerState in (QMediaPlayer.StoppedState, QMediaPlayer.PausedState) or contador_veces_boton%2 != 0:
-                contador_veces_boton += 1
+        if self.playerState in (QMediaPlayer.StoppedState, QMediaPlayer.PausedState):
                 self.play.emit()
-        elif self.playerState == QMediaPlayer.PlayingState or contador_veces_boton%2 == 0:
+        elif self.playerState == QMediaPlayer.PlayingState:
             self.pause.emit()
 
     
