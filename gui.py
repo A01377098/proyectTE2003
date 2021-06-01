@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-import serial 
+import serial
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Q_ARG, QAbstractItemModel,
         QFileInfo, qFuzzyCompare, QMetaObject, QModelIndex, QObject, Qt,
         QThread, QTime, QUrl)
@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (QApplication, QComboBox, QDialog, QFileDialog,
         QSizePolicy, QSlider, QStyle, QToolButton, QVBoxLayout, QWidget)
 
 
+
 class VideoWidget(QVideoWidget):
 
     def __init__(self, parent=None):
@@ -25,29 +26,29 @@ class VideoWidget(QVideoWidget):
         p.setColor(QPalette.Window, QColor(Qt.black))
         self.setPalette(p)
 
-        #self.setAttribute(Qt.WA_OpaquePaintEvent)
+        self.setAttribute(Qt.WA_OpaquePaintEvent)
+        
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape and self.isFullScreen():
+            self.setFullScreen(False)
+            event.accept()
+        elif event.key() == Qt.Key_Enter and event.modifiers() & Qt.Key_Alt:
+            self.setFullScreen(not self.isFullScreen())
+            event.accept()
+        else:
+            super(VideoWidget, self).keyPressEvent(event)
 
-#     def keyPressEvent(self, event):
-#         if event.key() == Qt.Key_Escape and self.isFullScreen():
-#             self.setFullScreen(False)
-#             event.accept()
-#         elif event.key() == Qt.Key_Enter and event.modifiers() & Qt.Key_Alt:
-#             self.setFullScreen(not self.isFullScreen())
-#             event.accept()
-#         else:
-#             super(VideoWidget, self).keyPressEvent(event)
-# 
-#     def mouseDoubleClickEvent(self, event):
-#         self.setFullScreen(not self.isFullScreen())
-#         event.accept()
+    def mouseDoubleClickEvent(self, event):
+        self.setFullScreen(not self.isFullScreen())
+        event.accept()
 
+# Clase para la lista 
 class PlaylistModel(QAbstractItemModel):
 
     Title, ColumnCount = range(2)
 
     def __init__(self, parent=None):
         super(PlaylistModel, self).__init__(parent)
-
         self.m_playlist = None
 
     def rowCount(self, parent=QModelIndex()):
@@ -129,7 +130,6 @@ class PlayerControls(QWidget):
 
     def __init__(self, parent=None):
         super(PlayerControls, self).__init__(parent)
-        self.estado = ""
 
         self.playerState = QMediaPlayer.StoppedState
         self.playerMuted = False
@@ -212,10 +212,12 @@ class PlayerControls(QWidget):
                     self.style().standardIcon(
                             QStyle.SP_MediaVolumeMuted if muted else QStyle.SP_MediaVolume))
 
-    def playClicked(self, estado):
-        if self.playerState in (QMediaPlayer.StoppedState, QMediaPlayer.PausedState) or estado == "pausa":
+    def playClicked(self):
+        contador_veces_boton = 0
+        if self.playerState in (QMediaPlayer.StoppedState, QMediaPlayer.PausedState) or contador_veces_boton%2 != 0:
+                contador_veces_boton += 1
                 self.play.emit()
-        elif self.playerState == QMediaPlayer.PlayingState or estado == "play":
+        elif self.playerState == QMediaPlayer.PlayingState or contador_veces_boton%2 == 0:
             self.pause.emit()
 
     
@@ -336,14 +338,14 @@ class HistogramWidget(QWidget):
             painter.fillRect(barWidth * i, 0, barWidth * (i + 1),
                     self.height() - h, Qt.black)
 
-
+# Clase Padre
 class Player(QWidget):
 
     fullScreenChanged = pyqtSignal(bool)
 
     def __init__(self, playlist, parent=None):
         super(Player, self).__init__(parent)
-
+        self.line = line
         self.colorDialog = None
         self.trackInfo = ""
         self.statusInfo = ""
@@ -395,9 +397,11 @@ class Player(QWidget):
         openButton = QPushButton("Open", clicked=self.open)
 
         controls = PlayerControls()
+       # lambda line=self.player.state():  controls.setState(self.player.state()) # =======================
         controls.setState(self.player.state())
         controls.setVolume(self.player.volume())
         controls.setMuted(controls.isMuted())
+        
 
         controls.play.connect(self.player.play)
         controls.pause.connect(self.player.pause)
@@ -642,56 +646,15 @@ class Player(QWidget):
 
 
 if __name__ == '__main__':
-    estado_play_pausa = ""
-    contador_play_pause = 0
-    #contador_boton_on_off = 0
     ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
     ser.flush()
     while True:
         if ser.in_waiting > 0:
             line =ser.readline().decode('utf-8').rstrip()
-            if (line == "0xFF22DD"):
-                contador_play_pause += 1 
-                if  contador_play_pause%2 == 0:
-                    estado_play_pausa = "pausa"
-                else:
-                    estado_play_pausa = "play"
-
             app = QApplication(sys.argv)
             controles = PlayerControls()
-            controles.playClicked(estado_play_pausa)
-            player = Player(sys.argv[1:])
+            lambda line=self.player.state():  controles.setState(self.player.state())
+            controles.playClicked()
+            player = Player(line, sys.argv[1:])
             player.show()
             sys.exit(app.exec_())
-
-    # CÖDIGO QUE SE UTILIZARÄ DESPUËS 
-    estado_play = ""
-    contador_play_pause = 0
-    contador_boton_on_off = 0
-            if (line == "0xFFA25D"):
-                contador_boton_on_off += 1 
-                if  contador_boton_on_off%2 == 0:
-                    estado = "apagado"
-                else:
-                    estado = "encendido"
-            elif (line == "0xFFE21D"):
-                estado = "silenciar"
-            elif (line == "0xFF22DD"):
-                contador_play_pause += 1 
-                if  contador_play_pause%2 == 0:
-                    estado = "pausa"
-                else:
-                    estado = "play"
-            elif (line == "0xFF02FD"):
-                estado = "rebobinar"
-            elif (line == "0xFFC23D"):
-                estado = "adelantar"
-            elif (line == "0xFF906F"):
-                estado = "subir_volumen"
-            elif (line == "0xFFA857"):
-                estado = "bajar_volumen"
-            elif (line == "0xFF9867"):
-                estado = "shuffle"
-            else:
-                print (" Intenta nuevamente")
-            print (estado)
