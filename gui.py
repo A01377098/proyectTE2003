@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import sys
-import serial
+import serial # QSerial
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Q_ARG, QAbstractItemModel,
         QFileInfo, qFuzzyCompare, QMetaObject, QModelIndex, QObject, Qt,
         QThread, QTime, QUrl)
@@ -118,8 +118,7 @@ class PlaylistModel(QAbstractItemModel):
 
 # ===============================================================================================
 class PlayerControls(QWidget):
-    play = pyqtSignal()
-                
+    play = pyqtSignal()          
     pause = pyqtSignal()
     stop = pyqtSignal()
     next = pyqtSignal()
@@ -173,15 +172,14 @@ class PlayerControls(QWidget):
         layout.addWidget(self.volumeSlider)
         layout.addWidget(self.rateBox)
         self.setLayout(layout)
+        
     def conexionArduino(self):
-        variable_estado = 
+        variable_estado = "" #QAction()
         contador_play_pausa = 0
         ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
         ser.flush()
         while True:
             if ser.in_waiting > 0:
-                app = QApplication(sys.argv)
-                controles = PlayerControls()
                 line =ser.readline().decode('utf-8').rstrip()
                 if line == "FF22DD":
                     if contador_play_pausa%2 != 0:
