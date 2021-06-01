@@ -239,6 +239,18 @@ class PlayerControls(QWidget):
                 self.stopButton.setEnabled(True)
                 self.playButton.setIcon(
                         self.style().standardIcon(QStyle.SP_MediaPlay))
+                
+    # ===================== Estado del valor de arduino ====================================== 
+            elif state == 1:
+                self.stopButton.setEnable(True)
+                self.playButton.setIcon(
+                        self.style().standardIcon(QStyle.SP_MediaPause))
+            elif state == 2:
+                self.stopButton.setEnable(True)
+                self.playButton.setIcon(
+                        self.style().standardIcon(QStyle.SP_MediaPause))
+                
+                
         
     def volume(self):
         return self.volumeSlider.value()
@@ -258,9 +270,9 @@ class PlayerControls(QWidget):
                             QStyle.SP_MediaVolumeMuted if muted else QStyle.SP_MediaVolume))
 
     def playClicked(self):
-        if self.playerState in (QMediaPlayer.StoppedState, QMediaPlayer.PausedState):
+        if self.playerState == 1 or self.playerState in (QMediaPlayer.StoppedState, QMediaPlayer.PausedState):
                 self.play.emit()
-        elif self.playerState == QMediaPlayer.PlayingState:
+        elif self.playerState == 2 or self.playerState == QMediaPlayer.PlayingState:
             self.pause.emit()
 
     
@@ -440,7 +452,7 @@ class Player(QWidget):
         openButton = QPushButton("Open", clicked=self.open)
 
         controls = PlayerControls()
-       # lambda line=self.player.state():  controls.setState(self.player.state()) # =======================
+        controls.conexionArduino()
         controls.setState(self.player.state())
         controls.setVolume(self.player.volume())
         controls.setMuted(controls.isMuted())
@@ -691,7 +703,6 @@ class Player(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     controles = PlayerControls()
-    controles.conexionArduino()
     controles.playClicked()
     player = Player(sys.argv[1:])
     player.show()
