@@ -356,7 +356,7 @@ class Player(QWidget):
 
         self.player = QMediaPlayer()
         self.playlist = QMediaPlaylist()
-        ccontador_play_pause = 0
+        contador_play_pause = 0
         contador_boton_on_off = 0
         valor = 0
         ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
@@ -437,7 +437,7 @@ class Player(QWidget):
                 openButton = QPushButton("Open", clicked=self.open)
 
                 controls = PlayerControls()
-                controls.conexionArduino()
+                #controls.conexionArduino()
                 controls.setState(self.player.state())
                 controls.setVolume(self.player.volume())
                 controls.setMuted(controls.isMuted())
