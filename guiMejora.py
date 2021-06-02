@@ -127,6 +127,7 @@ class PlayerControls(QWidget):
     changeVolume = pyqtSignal(int)
     changeMuting = pyqtSignal(bool)
     changeRate = pyqtSignal(float)
+    #estado_externa = pyqtSignal()    #Arduino
 
     def __init__(self, parent=None):
         super(PlayerControls, self).__init__(parent)
@@ -346,136 +347,162 @@ class Player(QWidget):
 
     def __init__(self, playlist, parent=None):
         super(Player, self).__init__(parent)
-        #self.line = line
+ 
         self.colorDialog = None
         self.trackInfo = ""
         self.statusInfo = ""
         self.duration = 0
-        contador_play_pause = 0
+        self.valor = 0
+
+        self.player = QMediaPlayer()
+        self.playlist = QMediaPlaylist()
+        ccontador_play_pause = 0
         contador_boton_on_off = 0
-        self.valor = int
+        valor = 0
         ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
         ser.flush()
         while True:
             if ser.in_waiting > 0:
                 line = ser.readline().decode('utf-8').rstrip()
+                #print(line)
+#                 if (line == "0xFFA25D"):
+#                     contador_boton_on_off += 1 
+#                     if  contador_boton_on_off%2 == 0:
+#                         self.estado = "apagado"
+#                     else:
+#                         self.estado = "encendido"
+#                     #print("entre")
+#                 elif (line == "0xFFE21D"):
+#                     self.estado = "silenciar"
                 if (line == "0xFF22DD"):
                     contador_play_pause += 1 
                     if  contador_play_pause%2 == 0:
                         self.valor = 1
                     else:
                         self.valor = 0
+#                 elif (line == "0xFF02FD"):
+#                     self.estado = "rebobinar"
+#                 elif (line == "0xFFC23D"):
+#                     self.estado = "adelantar"
+#                 elif (line == "0xFF906F"):
+#                     self.estado = "subir_volumen"
+#                 elif (line == "0xFFA857"):
+#                     self.estado = "bajar_volumen"
+#                 elif (line == "0xFF9867"):
+#                     self.estado = "shuffle"
+#                 else:
+#                     print (" Intenta nuevamente")
 
-        self.player = QMediaPlayer()
-        self.playlist = QMediaPlaylist()
-        self.player.setPlaylist(self.playlist)
+                self.player.setPlaylist(self.playlist)
 
-        self.player.durationChanged.connect(self.durationChanged)
-        self.player.positionChanged.connect(self.positionChanged)
-        self.player.metaDataChanged.connect(self.metaDataChanged)
-        self.playlist.currentIndexChanged.connect(self.playlistPositionChanged)
-        self.player.mediaStatusChanged.connect(self.statusChanged)
-        self.player.bufferStatusChanged.connect(self.bufferingProgress)
-        self.player.videoAvailableChanged.connect(self.videoAvailableChanged)
-        self.player.error.connect(self.displayErrorMessage)
+                self.player.durationChanged.connect(self.durationChanged)
+                self.player.positionChanged.connect(self.positionChanged)
+                self.player.metaDataChanged.connect(self.metaDataChanged)
+                self.playlist.currentIndexChanged.connect(self.playlistPositionChanged)
+                self.player.mediaStatusChanged.connect(self.statusChanged)
+                self.player.bufferStatusChanged.connect(self.bufferingProgress)
+                self.player.videoAvailableChanged.connect(self.videoAvailableChanged)
+                self.player.error.connect(self.displayErrorMessage)
 
-        self.videoWidget = VideoWidget()
-        self.player.setVideoOutput(self.videoWidget)
+                self.videoWidget = VideoWidget()
+                self.player.setVideoOutput(self.videoWidget)
 
-        self.playlistModel = PlaylistModel()
-        self.playlistModel.setPlaylist(self.playlist)
+                self.playlistModel = PlaylistModel()
+                self.playlistModel.setPlaylist(self.playlist)
 
-        self.playlistView = QListView()
-        self.playlistView.setModel(self.playlistModel)
-        self.playlistView.setCurrentIndex(
-                self.playlistModel.index(self.playlist.currentIndex(), 0))
+                self.playlistView = QListView()
+                self.playlistView.setModel(self.playlistModel)
+                self.playlistView.setCurrentIndex(
+                        self.playlistModel.index(self.playlist.currentIndex(), 0))
 
-        self.playlistView.activated.connect(self.jump)
+                self.playlistView.activated.connect(self.jump)
 
-        self.slider = QSlider(Qt.Horizontal)
-        self.slider.setRange(0, self.player.duration() / 10)
+                self.slider = QSlider(Qt.Horizontal)
+                self.slider.setRange(0, self.player.duration() / 10)
 
-        self.labelDuration = QLabel()
-        self.slider.sliderMoved.connect(self.seek)
+                self.labelDuration = QLabel()
+                self.slider.sliderMoved.connect(self.seek)
 
-        self.labelHistogram = QLabel()
-        self.labelHistogram.setText("Histogram:")
-        self.histogram = HistogramWidget()
-        histogramLayout = QHBoxLayout()
-        histogramLayout.addWidget(self.labelHistogram)
-        histogramLayout.addWidget(self.histogram, 1)
+                self.labelHistogram = QLabel()
+                self.labelHistogram.setText("Histogram:")
+                self.histogram = HistogramWidget()
+                histogramLayout = QHBoxLayout()
+                histogramLayout.addWidget(self.labelHistogram)
+                histogramLayout.addWidget(self.histogram, 1)
 
-        self.probe = QVideoProbe()
-        self.probe.videoFrameProbed.connect(self.histogram.processFrame)
-        self.probe.setSource(self.player)
+                self.probe = QVideoProbe()
+                self.probe.videoFrameProbed.connect(self.histogram.processFrame)
+                self.probe.setSource(self.player)
 
-        openButton = QPushButton("Open", clicked=self.open)
+                openButton = QPushButton("Open", clicked=self.open)
 
-        controls = PlayerControls()
-        controls.setState(self.player.state())
-        controls.setVolume(self.player.volume())
-        controls.setMuted(controls.isMuted())
-        print (self.valor)
-        controls.play.connect(self.player.play or self.valor)
-        controls.pause.connect(self.player.pause)
-        controls.stop.connect(self.player.stop)
-        controls.next.connect(self.playlist.next)
-        controls.previous.connect(self.previousClicked)
-        controls.changeVolume.connect(self.player.setVolume)
-        controls.changeMuting.connect(self.player.setMuted)
-        controls.changeRate.connect(self.player.setPlaybackRate)
-        controls.stop.connect(self.videoWidget.update)
+                controls = PlayerControls()
+                controls.conexionArduino()
+                controls.setState(self.player.state())
+                controls.setVolume(self.player.volume())
+                controls.setMuted(controls.isMuted())
+                
 
-        self.player.stateChanged.connect(controls.setState)
-        self.player.volumeChanged.connect(controls.setVolume)
-        self.player.mutedChanged.connect(controls.setMuted)
+                controls.play.connect(self.player.play or self.valor)
+                controls.pause.connect(self.player.pause)
+                controls.stop.connect(self.player.stop)
+                controls.next.connect(self.playlist.next)
+                controls.previous.connect(self.previousClicked)
+                controls.changeVolume.connect(self.player.setVolume)
+                controls.changeMuting.connect(self.player.setMuted)
+                controls.changeRate.connect(self.player.setPlaybackRate)
+                controls.stop.connect(self.videoWidget.update)
 
-        self.fullScreenButton = QPushButton("FullScreen")
-        self.fullScreenButton.setCheckable(True)
+                self.player.stateChanged.connect(controls.setState)
+                self.player.volumeChanged.connect(controls.setVolume)
+                self.player.mutedChanged.connect(controls.setMuted)
 
-        self.colorButton = QPushButton("Color Options...")
-        self.colorButton.setEnabled(False)
-        self.colorButton.clicked.connect(self.showColorDialog)
+                self.fullScreenButton = QPushButton("FullScreen")
+                self.fullScreenButton.setCheckable(True)
 
-        displayLayout = QHBoxLayout()
-        displayLayout.addWidget(self.videoWidget, 2)
-        displayLayout.addWidget(self.playlistView)
+                self.colorButton = QPushButton("Color Options...")
+                self.colorButton.setEnabled(False)
+                self.colorButton.clicked.connect(self.showColorDialog)
 
-        controlLayout = QHBoxLayout()
-        controlLayout.setContentsMargins(0, 0, 0, 0)
-        controlLayout.addWidget(openButton)
-        controlLayout.addStretch(1)
-        controlLayout.addWidget(controls)
-        controlLayout.addStretch(1)
-        controlLayout.addWidget(self.fullScreenButton)
-        controlLayout.addWidget(self.colorButton)
+                displayLayout = QHBoxLayout()
+                displayLayout.addWidget(self.videoWidget, 2)
+                displayLayout.addWidget(self.playlistView)
 
-        layout = QVBoxLayout()
-        layout.addLayout(displayLayout)
-        hLayout = QHBoxLayout()
-        hLayout.addWidget(self.slider)
-        hLayout.addWidget(self.labelDuration)
-        layout.addLayout(hLayout)
-        layout.addLayout(controlLayout)
-        layout.addLayout(histogramLayout)
+                controlLayout = QHBoxLayout()
+                controlLayout.setContentsMargins(0, 0, 0, 0)
+                controlLayout.addWidget(openButton)
+                controlLayout.addStretch(1)
+                controlLayout.addWidget(controls)
+                controlLayout.addStretch(1)
+                controlLayout.addWidget(self.fullScreenButton)
+                controlLayout.addWidget(self.colorButton)
 
-        self.setLayout(layout)
+                layout = QVBoxLayout()
+                layout.addLayout(displayLayout)
+                hLayout = QHBoxLayout()
+                hLayout.addWidget(self.slider)
+                hLayout.addWidget(self.labelDuration)
+                layout.addLayout(hLayout)
+                layout.addLayout(controlLayout)
+                layout.addLayout(histogramLayout)
 
-        if not self.player.isAvailable():
-            QMessageBox.warning(self, "Service not available",
-                    "The QMediaPlayer object does not have a valid service.\n"
-                    "Please check the media service plugins are installed.")
+                self.setLayout(layout)
 
-            controls.setEnabled(False)
-            self.playlistView.setEnabled(False)
-            openButton.setEnabled(False)
-            self.colorButton.setEnabled(False)
-            self.fullScreenButton.setEnabled(False)
+                if not self.player.isAvailable():
+                    QMessageBox.warning(self, "Service not available",
+                            "The QMediaPlayer object does not have a valid service.\n"
+                            "Please check the media service plugins are installed.")
 
-        self.metaDataChanged()
+                    controls.setEnabled(False)
+                    self.playlistView.setEnabled(False)
+                    openButton.setEnabled(False)
+                    self.colorButton.setEnabled(False)
+                    self.fullScreenButton.setEnabled(False)
 
-        self.addToPlaylist(playlist)
-                      
+                self.metaDataChanged()
+
+                self.addToPlaylist(playlist)
+
     def open(self):
         fileNames, _ = QFileDialog.getOpenFileNames(self, "Open Files")
         self.addToPlaylist(fileNames)
@@ -659,13 +686,9 @@ class Player(QWidget):
 
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    controles = PlayerControls()
-    controles.playClicked()
-    player = Player(sys.argv[1:])
-    #player.conexion()
-    player.show()
-    sys.exit(app.exec_())
-        
-            
-
+        app = QApplication(sys.argv)
+        controles = PlayerControls()
+        controles.playClicked()
+        player = Player(sys.argv[1:])
+        player.show()
+        sys.exit(app.exec_())
