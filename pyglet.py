@@ -36,6 +36,28 @@ def pausa(is_pausedo):
     else:
         pygame.mixer.music.pause()
         paused=True
+def next_song():
+    next_one = song_box.cursor.curselection()
+    next_one = next_one[0]+1
+    song = song_box.get(next_one)
+    pygame.mixer.music.load(song)
+    pygame.mixer.music.play(-1)
+    
+    song_box.selection_clear(0, END)
+    song_box.active(next_one)
+    song_box.selection_set(next_one, Last=None)
+    
+def previous():
+    next_one = song_box.cursor.curselection()
+    next_one = next_one[0]-1
+    song = song_box.get(next_one)
+    pygame.mixer.music.load(song)
+    pygame.mixer.music.play(-1)
+    
+    song_box.selection_clear(0, END)
+    song_box.active(next_one)
+    song_box.selection_set(next_one, Last=None)
+    
 #Lista de canciones
 song_box = Listbox(root, bg="black", fg="white", width=300, selectbackground="gray", selectforeground="white")
 song_box.pack(pady=20)
@@ -51,11 +73,11 @@ forward_image=PhotoImage(file= "Musica/forward.png")
 controls_frame = Frame(root)
 controls_frame.pack()
 
-back= Button(controls_frame, image=back_image, borderwidth=0)
+back= Button(controls_frame, image=back_image, borderwidth=0, command=previous)
 play=Button(controls_frame, image=play_image, borderwidth=0, command=play)
 pauseButton=Button(controls_frame, image=pause_image, borderwidth=0, command=lambda: pausa(paused))
 stop=Button(controls_frame, image=stop_image, borderwidth=0, command=stop)
-forward=Button(controls_frame, image=forward_image, borderwidth=0)
+forward=Button(controls_frame, image=forward_image, borderwidth=0, command=next_song)
 
 back.grid(row=0, column=0 )
 play.grid(row=0, column=1)
