@@ -164,11 +164,12 @@ contador_veces=0
 while True:
     if ser.in_waiting > 0:
         line = ser.readline().decode('utf-8').rstrip()
-                     
+        print(line)     
         if (line == "0xFF22DD"):
              if contador_veces%2 == 0: 
                 estado = "pausar"
                  pausa(False)
+                 pausa()
 
               else:
                    estado = "reproducir"
