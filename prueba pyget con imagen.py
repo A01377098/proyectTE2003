@@ -7,7 +7,14 @@ import pygame
 from glob import glob
 import time
 import os
+#import serial
+from concurrent.futures import ProcessPoolExecutor #Multi-core processing 
 
+#Estados de las señales
+global state
+state = ""
+
+#Creacion de la raíz
 root = Tk()
 root.title("Música")
 root.geometry("500x400")
@@ -29,7 +36,7 @@ for archivo in contenido :
 
 def add_song():
     #song =filedialog.askopenfilename(initialdir="audio/", title="Escoge una cancion", filetypes=(("mp3 FIles", ".mp3"), ))
-    path = os.getcwd() + "/proyectTE2003/"
+    path = os.getcwd() + "/"
     for cancion in lista_Canciones:
         song = path + cancion
         song_box.insert(END, song)
@@ -37,7 +44,45 @@ def add_song():
 #     song1=song.replace("D:/A_TEC CEM/IRS/4to Semestre/Programacion/Pygame/audio/", " ") 
 #     song1=song1.replace(".mp3", " ")
     
-    
+#Recibe las señales del control mientras el mainloop de la raíz se va a ejecutar
+def serial_signals():
+
+    global estado
+
+    ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
+    ser.flush()
+    while True:
+        if ser.in_waiting > 0:
+            line = ser.readline().decode('utf-8').rstrip()
+                     
+            if (line == "0xFF22DD"):
+                
+                if  estado == "reproducir":
+                    estado = "pausar"
+                    pausa(False)
+
+
+                elif estado == "pausar":
+                    estado = "reproducir"
+                    play()
+
+                        
+            elif (line == "0xFF02FD"):
+                estado = "anterior"
+                previous_song()
+                
+                    
+            elif (line == "0xFFC23D"):
+                estado = "siguiente"
+                next_song()
+
+                    
+            elif (line == "0xFF906F"):
+                estado = "subir_volumen"
+
+                    
+            elif (line == "0xFFA857"):
+                estado = "bajar_volumen"
     
 def play():
     song = song_box.get(ACTIVE)
@@ -59,7 +104,6 @@ def pausa(is_pausedo):
 
 def next_song():
     next_one = song_box.curselection()
-    print(next_one)
 
     if next_one[0]+1 > song_box.size():
         
@@ -67,13 +111,14 @@ def next_song():
     else:
         next_one = next_one[0]+1
 
-    if  (song_box.get(next_one) == ''):
+    if (song_box.get(next_one) == ''):
         
         song = song_box.get(0)
         next_one = (0,)
     else:
         song = song_box.get(next_one)
 
+    print(type(next_one))
     pygame.mixer.music.load(song)
     pygame.mixer.music.play(-1)
     
@@ -81,16 +126,28 @@ def next_song():
     song_box.activate(next_one)
     song_box.selection_set(next_one, last = next_one)
     
-def previous():
+def previous_song():
     next_one = song_box.curselection()
 
-    if next_one[0]-1 < 0:
-        
-        next_one = next_one[0]
-    else:
+    if next_one[0] == 0:
         next_one = next_one[0]-1
 
-    song = song_box.get(next_one)
+    elif next_one[0]-1 < 0:
+        
+        next_one = next_one[0]
+        song = song_box.get(next_one)
+
+    else:
+        next_one = next_one[0]-1
+        song = song_box.get(next_one)
+
+    if song_box.get(next_one) == '':
+        print(song_box.size())
+        song = song_box.get(song_box.size()-1)
+        next_one = (song_box.size()-1,)
+
+    
+
     pygame.mixer.music.load(song)
     pygame.mixer.music.play(-1)
     
@@ -122,7 +179,7 @@ forward_image=PhotoImage(file= "forward.png")
 controls_frame = Frame(root)
 controls_frame.pack()
 
-back= Button(controls_frame, image=back_image, borderwidth=0, command=previous)
+back= Button(controls_frame, image=back_image, borderwidth=0, command=previous_song)
 play=Button(controls_frame, image=play_image, borderwidth=0, command=play)
 pauseButton=Button(controls_frame, image=pause_image, borderwidth=0, command=lambda: pausa(paused))
 stop=Button(controls_frame, image=stop_image, borderwidth=0, command=stop)
@@ -141,5 +198,7 @@ add_song_menu = Menu(menuD)
 menuD.add_cascade(label="Añade tus canciones", menu=add_song_menu)
 add_song_menu.add_command(label= "Cargar canciones", command=add_song)
 
-root.mainloop()
-root.destroy()
+executor = ProcessPoolExecutor()
+executor.map(root.mainloop(), serial_signals())
+#root.mainloop()
+#root.destroy()
