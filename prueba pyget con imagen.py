@@ -11,8 +11,8 @@ import serial
 from concurrent.futures import ProcessPoolExecutor #Multi-core processing 
 
 #Estados de las señales
-global state
-state = ""
+global running
+running = True
 
 #Creacion de la raíz
 root = Tk()
@@ -40,51 +40,43 @@ def add_song():
     for cancion in lista_Canciones:
         song = path + cancion
         song_box.insert(END, song)
-    #song_name=song.split('/')[-1].split('.')[0]
 #     song1=song.replace("D:/A_TEC CEM/IRS/4to Semestre/Programacion/Pygame/audio/", " ") 
 #     song1=song1.replace(".mp3", " ")
     
 #Recibe las señales del control mientras el mainloop de la raíz se va a ejecutar
-
-global estado
-estado = ""
-
-def serial_signals():
-    global estado
-    ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
-    ser.flush()
-    while True:
-        if ser.in_waiting > 0:
-            line = ser.readline().decode('utf-8').rstrip()
+ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
+ser.flush()
+contador_veces=0
+while runinng:
+    if ser.in_waiting > 0:
+        line = ser.readline().decode('utf-8').rstrip()
                      
-            if (line == "0xFF22DD"):
-                
-                if  estado == "reproducir":
-                    estado = "pausar"
-                    pausa(False)
+    if (line == "0xFF22DD"):
+         if contador_veces%2 == 0: 
+            estado = "pausar"
+             pausa(False)
 
-
-                elif estado == "pausar":
-                    estado = "reproducir"
-                    play()
+          else:
+               estado = "reproducir"
+               play()
 
                         
-            elif (line == "0xFF02FD"):
-                estado = "anterior"
-                previous_song()
+      elif (line == "0xFF02FD"):
+           estado = "anterior"
+           previous_song()
                 
                     
-            elif (line == "0xFFC23D"):
-                estado = "siguiente"
-                next_song()
+      elif (line == "0xFFC23D"):
+            estado = "siguiente"
+            next_song()
 
                     
-            elif (line == "0xFF906F"):
-                estado = "subir_volumen"
+      elif (line == "0xFF906F"):
+            estado = "subir_volumen"
 
                     
-            elif (line == "0xFFA857"):
-                estado = "bajar_volumen"
+      elif (line == "0xFFA857"):
+            estado = "bajar_volumen"
     
 def play():
     song = song_box.get(ACTIVE)
@@ -200,7 +192,7 @@ add_song_menu = Menu(menuD)
 menuD.add_cascade(label="Añade tus canciones", menu=add_song_menu)
 add_song_menu.add_command(label= "Cargar canciones", command=add_song)
 
-executor = ProcessPoolExecutor()
-executor.map(root.mainloop(), serial_signals())
+#executor = ProcessPoolExecutor()
+#executor.map(root.mainloop(), serial_signals())
 #root.mainloop()
 #root.destroy()
