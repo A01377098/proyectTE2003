@@ -47,42 +47,43 @@ def add_song():
 #Recibe las señales del control mientras el mainloop de la raíz se va a ejecutar
 def serial_signals():
 
-    global estado
+    global state
 
     ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
     ser.flush()
     while True:
         if ser.in_waiting > 0:
             line = ser.readline().decode('utf-8').rstrip()
+            print(line)
                      
             if (line == "0xFF22DD"):
                 
-                if  estado == "reproducir":
-                    estado = "pausar"
+                if  state == "reproducir":
+                    state = "pausar"
                     pausa(False)
 
 
-                elif estado == "pausar":
-                    estado = "reproducir"
+                elif state == "pausar":
+                    state = "reproducir"
                     play()
 
                         
             elif (line == "0xFF02FD"):
-                estado = "anterior"
+                state = "anterior"
                 previous_song()
                 
                     
             elif (line == "0xFFC23D"):
-                estado = "siguiente"
+                state = "siguiente"
                 next_song()
 
                     
             elif (line == "0xFF906F"):
-                estado = "subir_volumen"
+                state = "subir_volumen"
 
                     
             elif (line == "0xFFA857"):
-                estado = "bajar_volumen"
+                state = "bajar_volumen"
     
 def play():
     song = song_box.get(ACTIVE)
