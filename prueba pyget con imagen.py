@@ -18,7 +18,7 @@ global paused
 paused = False
 
 # Crear una lista de las canciones que hay en la raspberry
-contenido = os.listdir('C:\\Users\\Omar Sorchini\\Desktop\\TEC\\Eva\\proyectTE2003')
+contenido = os.listdir('/home/pi/proyectTE2003/')
 lista_Canciones = []
 
 for archivo in contenido :
@@ -29,14 +29,13 @@ for archivo in contenido :
 
 def add_song():
     #song =filedialog.askopenfilename(initialdir="audio/", title="Escoge una cancion", filetypes=(("mp3 FIles", ".mp3"), ))
-    path = os.getcwd() + "/proyectTE2003/"
+    path = os.getcwd() + "/"
     for cancion in lista_Canciones:
         song = path + cancion
         song_box.insert(END, song)
     #song_name=song.split('/')[-1].split('.')[0]
 #     song1=song.replace("D:/A_TEC CEM/IRS/4to Semestre/Programacion/Pygame/audio/", " ") 
 #     song1=song1.replace(".mp3", " ")
-    
     
     
 def play():
@@ -142,4 +141,4 @@ menuD.add_cascade(label="Añade tus canciones", menu=add_song_menu)
 add_song_menu.add_command(label= "Cargar canciones", command=add_song)
 
 root.mainloop()
-root.destroy()
+#root.destroy()
