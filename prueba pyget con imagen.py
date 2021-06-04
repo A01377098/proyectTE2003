@@ -45,10 +45,12 @@ def add_song():
 #     song1=song1.replace(".mp3", " ")
     
 #Recibe las señales del control mientras el mainloop de la raíz se va a ejecutar
+
+global estado
+estado = ""
+
 def serial_signals():
-
     global estado
-
     ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
     ser.flush()
     while True:
