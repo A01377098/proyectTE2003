@@ -344,6 +344,40 @@ class HistogramWidget(QWidget):
 class Player(QWidget):
 
     fullScreenChanged = pyqtSignal(bool)
+    valor = 0
+    ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
+    ser.flush()
+    while True:
+        if ser.in_waiting > 0:
+            line = ser.readline().decode('utf-8').rstrip()
+                #print(line)
+#                 if (line == "0xFFA25D"):
+#                     contador_boton_on_off += 1 
+#                     if  contador_boton_on_off%2 == 0:
+#                         self.estado = "apagado"
+#                     else:
+#                         self.estado = "encendido"
+#                     #print("entre")
+#                 elif (line == "0xFFE21D"):
+#                     self.estado = "silenciar"
+            if (line == "0xFF22DD"):
+                contador_play_pause += 1 
+                if  contador_play_pause%2 == 0:
+                    valor = 1
+                else:
+                    valor = 0
+#                 elif (line == "0xFF02FD"):
+#                     self.estado = "rebobinar"
+#                 elif (line == "0xFFC23D"):
+#                     self.estado = "adelantar"
+#                 elif (line == "0xFF906F"):
+#                     self.estado = "subir_volumen"
+#                 elif (line == "0xFFA857"):
+#                     self.estado = "bajar_volumen"
+#                 elif (line == "0xFF9867"):
+#                     self.estado = "shuffle"
+#                 else:
+#                     print (" Intenta nuevamente")
 
     def __init__(self, playlist, parent=None):
         super(Player, self).__init__(parent)
@@ -358,40 +392,6 @@ class Player(QWidget):
         self.playlist = QMediaPlaylist()
         contador_play_pause = 0
         contador_boton_on_off = 0
-        valor = 0
-        ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
-        ser.flush()
-        while True:
-            if ser.in_waiting > 0:
-                line = ser.readline().decode('utf-8').rstrip()
-                #print(line)
-#                 if (line == "0xFFA25D"):
-#                     contador_boton_on_off += 1 
-#                     if  contador_boton_on_off%2 == 0:
-#                         self.estado = "apagado"
-#                     else:
-#                         self.estado = "encendido"
-#                     #print("entre")
-#                 elif (line == "0xFFE21D"):
-#                     self.estado = "silenciar"
-                if (line == "0xFF22DD"):
-                    contador_play_pause += 1 
-                    if  contador_play_pause%2 == 0:
-                        self.valor = 1
-                    else:
-                        self.valor = 0
-#                 elif (line == "0xFF02FD"):
-#                     self.estado = "rebobinar"
-#                 elif (line == "0xFFC23D"):
-#                     self.estado = "adelantar"
-#                 elif (line == "0xFF906F"):
-#                     self.estado = "subir_volumen"
-#                 elif (line == "0xFFA857"):
-#                     self.estado = "bajar_volumen"
-#                 elif (line == "0xFF9867"):
-#                     self.estado = "shuffle"
-#                 else:
-#                     print (" Intenta nuevamente")
 
         self.player.setPlaylist(self.playlist)
 

@@ -133,10 +133,10 @@ class VideoPlayer(QMainWindow):
         ser.flush()
         while True:
             if ser.in_waiting > 0:
-#                 line = ser.readline().decode('utf-8').rstrip()
+                 line = ser.readline().decode('utf-8').rstrip()
 #                 if (line == "0xFFE21D"):
 #                     self.estado = "silenciar"
-                if (line == "0xFF22DD"):
+                 if (line == "0xFF22DD"):
                     contador_play_pause += 1 
                     if  contador_play_pause%2 == 0:
                         self.mediaPlayer = 1
