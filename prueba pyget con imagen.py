@@ -12,6 +12,7 @@ import serial
 
 #Estados de las señales
 global state
+state = ""
 
 #Creacion de la raíz
 root = Tk()
@@ -24,7 +25,10 @@ global paused
 paused = False
 
 # Crear una lista de las canciones que hay en la raspberry
-contenido = os.listdir('C:/Users/Omar Sorchini/Desktop/TEC/Eva/proyectTE2003')
+# Directorio de Omar:
+# Directorio de Raspberry: /home/pi/proyectTE2003
+
+contenido = os.listdir('')
 lista_Canciones = []
 
 for archivo in contenido :
@@ -42,53 +46,6 @@ def add_song():
 #     song1=song.replace("D:/A_TEC CEM/IRS/4to Semestre/Programacion/Pygame/audio/", " ") 
 #     song1=song1.replace(".mp3", " ")
 
-#Recibe las señales del control mientras el mainloop de la raíz se va a ejecutar
-
-def serial_signals():
-
-    global state
-
-    ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 0, writeTimeout=0)
-    ser.flush()
-    while True:
-        if ser.in_waiting > 0:
-            line = ser.readline().decode('utf-8').rstrip()
-            
-            if len(line) == 0:
-                break
-                     
-            if (line == "0xFF22DD"):
-                
-                if  state == "reproducir":
-                    state = "pausar"
-                    pausa(False)
-
-
-                elif state == "pausar":
-                    state = "reproducir"
-                    play()
-
-                        
-            elif (line == "0xFF02FD"):
-                state = "anterior"
-                print("hago previous")
-                previous_song()
-                
-                    
-            elif (line == "0xFFC23D"):
-                state = "siguiente"
-                next_song()
-
-                    
-            elif (line == "0xFF906F"):
-                state = "subir_volumen"
-
-                    
-            elif (line == "0xFFA857"):
-                state = "bajar_volumen"
-
-        root.after(10, serial_signals) 
-    
 def play():
     song = song_box.get(ACTIVE)
     pygame.mixer.music.load(song)
@@ -162,6 +119,52 @@ def exit():
     
     pygame.quit()
     sys.exit()
+    
+#Recibe las señales del control mientras el mainloop de la raíz se va a ejecutar
+def serial_signals():
+
+    global state
+    contador_veces = 0
+    ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 0, writeTimeout=0)
+    ser.flush()
+    while True:
+        if ser.in_waiting > 0:
+            line = ser.readline().decode('utf-8').rstrip()
+            
+            if len(line) == 0:
+                break
+                     
+            if (line == "0xFF22DD"):
+                contador_veces += 1
+                if  contador_veces%2 == 0: #Se encuentra reproduciendo
+                    state = "pausar"
+                    pausa(False)
+                elif contador_veces%2 != 0: #Indicativo que está en pausa
+                    state = "reproducir"
+                    play()
+                print("Me has seleccionado", contador_veces)
+
+                        
+            elif (line == "0xFF02FD"):
+                state = "anterior"
+                print("hago previous")
+                previous_song()
+                
+                    
+            elif (line == "0xFFC23D"):
+                state = "siguiente"
+                next_song()
+
+                    
+            elif (line == "0xFF906F"):
+                state = "subir_volumen"
+
+                    
+            elif (line == "0xFFA857"):
+                state = "bajar_volumen"
+
+        root.after(10, serial_signals) 
+    
 
 imagenA = ImageTk.PhotoImage(Image.open("michael.gif"))
 imagenB = ImageTk.PhotoImage(Image.open("play.png"))
