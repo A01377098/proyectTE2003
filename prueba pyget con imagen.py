@@ -26,7 +26,7 @@ root.geometry("500x400")
 
 #Actualizacion de string de temperatura
 global valor
-valor = root.StringVar()
+valor = StringVar()
 
 #Actualizacion de variable temperatura
 global temperatura_valor_signal
@@ -179,8 +179,9 @@ def serial_signals():
     root.after(10, serial_signals) 
 
 def updateTemp(temperatura_valor_signal):
+    global valor
     valor.set("La temperatura actual es: " + str(temperatura_valor_signal) + "°")
-    root.after(15, updateTemp)
+    temp_text.after(1, updateTemp)
 
 imagenA = ImageTk.PhotoImage(Image.open("michael.gif"))
 imagenB = ImageTk.PhotoImage(Image.open("play.png"))
