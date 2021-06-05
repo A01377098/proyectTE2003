@@ -25,7 +25,7 @@ global paused
 paused = False
 
 # Crear una lista de las canciones que hay en la raspberry
-# Directorio de Omar:
+# Directorio de Omar: C:/Users/Omar Sorchini/Desktop/TEC/Eva/proyectTE2003
 # Directorio de Raspberry: /home/pi/proyectTE2003
 
 contenido = os.listdir('')
