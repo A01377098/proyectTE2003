@@ -18,14 +18,19 @@ global state
 state = ""
 global contador_veces
 contador_veces = 0
-global temperatura_valor_signal
-temperatura_valor_signal = 0.0
-global valor
+
 #Creacion de la raíz
 root = Tk()
 root.title("Música")
 root.geometry("500x400")
 
+#Actualizacion de string de temperatura
+global valor
+valor = root.StringVar()
+
+#Actualizacion de variable temperatura
+global temperatura_valor_signal
+temperatura_valor_signal = 0.0
 #Inicialización de la musica 
 pygame.mixer.init()
 global paused
@@ -174,7 +179,7 @@ def serial_signals():
     root.after(10, serial_signals) 
 
 def updateTemp(temperatura_valor_signal):
-    temp_text = Label(control_temp_frame, text = "La temperatura actual es: " + str(temperatura_valor_signal) + "°",borderwidth=0)
+    valor.set("La temperatura actual es: " + str(temperatura_valor_signal) + "°")
     root.after(15, updateTemp)
 
 imagenA = ImageTk.PhotoImage(Image.open("michael.gif"))
@@ -195,7 +200,7 @@ temp_image = PhotoImage(file = "sunshine.png")
 control_temp_frame = Frame(root)
 control_temp_frame.pack()
 temp = Button(control_temp_frame, image= temp_image , borderwidth= 0)
-temp_text = Label(control_temp_frame, text = "La temperatura actual es: " + str(temperatura_valor_signal) + "°",borderwidth=0, command=updateTemp(temperatura_valor_signal))
+temp_text = Label(control_temp_frame, textvariable = valor ,borderwidth=0)
 temp.grid(row = 0, column= 0)
 temp_text.grid(row = 0, column= 1)
 
@@ -237,5 +242,6 @@ add_song_menu.add_command(label= "Cargar canciones", command=add_song)
 #executor = ProcessPoolExecutor()
 #executor.map(root.mainloop(), serial_signals())
 root.after(1000, serial_signals)
+root.after(1005, updateTemp)
 root.mainloop()
 #root.destroy()
