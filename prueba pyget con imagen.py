@@ -48,7 +48,7 @@ def serial_signals():
 
     global state
 
-    ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
+    ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 0, writeTimeout=0)
     ser.flush()
     while True:
         if ser.in_waiting > 0:
