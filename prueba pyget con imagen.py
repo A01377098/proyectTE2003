@@ -28,7 +28,7 @@ paused = False
 # Directorio de Omar: C:/Users/Omar Sorchini/Desktop/TEC/Eva/proyectTE2003
 # Directorio de Raspberry: /home/pi/proyectTE2003
 
-contenido = os.listdir('')
+contenido = os.listdir('/home/pi/proyectTE2003')
 lista_Canciones = []
 
 for archivo in contenido :
@@ -125,7 +125,7 @@ def serial_signals():
 
     global state
     contador_veces = 0
-    ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 0, writeTimeout=0)
+    ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1, writeTimeout=0)
     ser.flush()
     while True:
         if ser.in_waiting > 0:
@@ -143,8 +143,7 @@ def serial_signals():
                     state = "reproducir"
                     play()
                 print("Me has seleccionado", contador_veces)
-
-                        
+      
             elif (line == "0xFF02FD"):
                 state = "anterior"
                 print("hago previous")
@@ -202,19 +201,19 @@ song_box.grid(row = 0, column = 1)
 controls_frame = Frame(root)
 controls_frame.pack()
 
-back= Button(controls_frame, image=back_image, borderwidth=0, command=previous_song)
-play=Button(controls_frame, image=play_image, borderwidth=0, command=play)
+backButton= Button(controls_frame, image=back_image, borderwidth=0, command=previous_song)
+playButton=Button(controls_frame, image=play_image, borderwidth=0, command=play)
 pauseButton=Button(controls_frame, image=pause_image, borderwidth=0, command=lambda: pausa(paused))
-stop=Button(controls_frame, image=stop_image, borderwidth=0, command=stop)
-forward=Button(controls_frame, image=forward_image, borderwidth=0, command=next_song)
-exit = Button(controls_frame, image = delete_image, borderwidth=0, command= exit)
+stopButton=Button(controls_frame, image=stop_image, borderwidth=0, command=stop)
+forwardButton=Button(controls_frame, image=forward_image, borderwidth=0, command=next_song)
+exitButton = Button(controls_frame, image = delete_image, borderwidth=0, command= exit)
 
-back.grid(row=0, column=0 )
-play.grid(row=0, column=1)
+backButton.grid(row=0, column=0 )
+playButton.grid(row=0, column=1)
 pauseButton.grid(row=0, column=2)
-stop.grid(row=0, column=3)
-forward.grid(row=0, column=4)
-exit.grid(row=1, column=2)
+stopButton.grid(row=0, column=3)
+forwardButton.grid(row=0, column=4)
+exitButton.grid(row=1, column=2)
 
 menuD=Menu(root)
 root.config(menu=menuD)
