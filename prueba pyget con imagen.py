@@ -148,7 +148,6 @@ def serial_signals():
 
     if ser.in_waiting > 0:
         line = ser.readline().decode('latin1').rstrip()
-        print(line)
         #if len(line) == 0:
             #break
                      
