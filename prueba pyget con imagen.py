@@ -8,11 +8,10 @@ from glob import glob
 import time
 import os
 import serial
-from concurrent.futures import ProcessPoolExecutor #Multi-core processing 
+#from concurrent.futures import ProcessPoolExecutor #Multi-core processing 
 
 #Estados de las señales
-global running
-running = True
+global state
 
 #Creacion de la raíz
 root = Tk()
@@ -25,7 +24,7 @@ global paused
 paused = False
 
 # Crear una lista de las canciones que hay en la raspberry
-contenido = os.listdir('/home/pi/proyectTE2003/')
+contenido = os.listdir('C:/Users/Omar Sorchini/Desktop/TEC/Eva/proyectTE2003')
 lista_Canciones = []
 
 for archivo in contenido :
@@ -42,9 +41,9 @@ def add_song():
         song_box.insert(END, song)
 #     song1=song.replace("D:/A_TEC CEM/IRS/4to Semestre/Programacion/Pygame/audio/", " ") 
 #     song1=song1.replace(".mp3", " ")
-    
-<<<<<<< HEAD
+
 #Recibe las señales del control mientras el mainloop de la raíz se va a ejecutar
+
 def serial_signals():
 
     global state
@@ -54,7 +53,9 @@ def serial_signals():
     while True:
         if ser.in_waiting > 0:
             line = ser.readline().decode('utf-8').rstrip()
-            print(line)
+            
+            if len(line) == 0:
+                break
                      
             if (line == "0xFF22DD"):
                 
@@ -70,6 +71,7 @@ def serial_signals():
                         
             elif (line == "0xFF02FD"):
                 state = "anterior"
+                print("hago previous")
                 previous_song()
                 
                     
@@ -84,9 +86,9 @@ def serial_signals():
                     
             elif (line == "0xFFA857"):
                 state = "bajar_volumen"
+
+        root.after(10, serial_signals) 
     
-=======
->>>>>>> 8141e82fb578081f4052ac9965843f88b7b22f2b
 def play():
     song = song_box.get(ACTIVE)
     pygame.mixer.music.load(song)
@@ -121,7 +123,7 @@ def next_song():
     else:
         song = song_box.get(next_one)
 
-    print(type(next_one))
+    #print(type(next_one))
     pygame.mixer.music.load(song)
     pygame.mixer.music.play(-1)
     
@@ -145,11 +147,9 @@ def previous_song():
         song = song_box.get(next_one)
 
     if song_box.get(next_one) == '':
-        print(song_box.size())
+        #print(song_box.size())
         song = song_box.get(song_box.size()-1)
         next_one = (song_box.size()-1,)
-
-    
 
     pygame.mixer.music.load(song)
     pygame.mixer.music.play(-1)
@@ -158,11 +158,34 @@ def previous_song():
     song_box.activate(next_one)
     song_box.selection_set(next_one, last = next_one)
 
+def exit():
+    
+    pygame.quit()
+    sys.exit()
+
 imagenA = ImageTk.PhotoImage(Image.open("michael.gif"))
 imagenB = ImageTk.PhotoImage(Image.open("play.png"))
 imagenC = ImageTk.PhotoImage(Image.open("pausa.png"))
 lista_Imagenes = [imagenA, imagenB, imagenC]
 
+#Botones de control
+back_image= PhotoImage(file= "rewind.png")
+play_image=PhotoImage(file= "play.png")
+pause_image=PhotoImage(file= "pausa.png")
+stop_image=PhotoImage(file= "stop.png")
+forward_image=PhotoImage(file= "forward.png")
+delete_image=PhotoImage(file = "off.png")
+temp_image = PhotoImage(file = "sunshine.png")
+
+#Frame 1
+control_temp_frame = Frame(root)
+control_temp_frame.pack()
+temp = Button(control_temp_frame, image= temp_image , borderwidth= 0)
+temp_text = Label(control_temp_frame, text = "La temperatura actual es: " + str(20.5) + "°",borderwidth=0)
+temp.grid(row = 0, column= 0)
+temp_text.grid(row = 0, column= 1)
+
+#Frame 2
 controls_frame_songs = Frame(root)
 controls_frame_songs.pack()
 label_image = Label(controls_frame_songs, image=imagenA, borderwidth=0)
@@ -171,14 +194,8 @@ song_box = Listbox(controls_frame_songs, bg="black", fg="white", width=300, heig
 label_image.grid(row=0, column=0)
 song_box.grid(row = 0, column = 1)
 
-#Botones de control
-back_image= PhotoImage(file= "rewind.png")
-play_image=PhotoImage(file= "play.png")
-pause_image=PhotoImage(file= "pausa.png")
-stop_image=PhotoImage(file= "stop.png")
-forward_image=PhotoImage(file= "forward.png")
-
 #Los botones se muestran en la ventana con un Frame
+#Frame 3
 controls_frame = Frame(root)
 controls_frame.pack()
 
@@ -187,12 +204,14 @@ play=Button(controls_frame, image=play_image, borderwidth=0, command=play)
 pauseButton=Button(controls_frame, image=pause_image, borderwidth=0, command=lambda: pausa(paused))
 stop=Button(controls_frame, image=stop_image, borderwidth=0, command=stop)
 forward=Button(controls_frame, image=forward_image, borderwidth=0, command=next_song)
+exit = Button(controls_frame, image = delete_image, borderwidth=0, command= exit)
 
 back.grid(row=0, column=0 )
 play.grid(row=0, column=1)
 pauseButton.grid(row=0, column=2)
 stop.grid(row=0, column=3)
 forward.grid(row=0, column=4)
+exit.grid(row=1, column=2)
 
 menuD=Menu(root)
 root.config(menu=menuD)
@@ -201,42 +220,8 @@ add_song_menu = Menu(menuD)
 menuD.add_cascade(label="Añade tus canciones", menu=add_song_menu)
 add_song_menu.add_command(label= "Cargar canciones", command=add_song)
 
-#Recibe las señales del control mientras el mainloop de la raíz se va a ejecutar
-ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1)
-ser.flush()
-contador_veces=0
-while True:
-    if ser.in_waiting > 0:
-        line = ser.readline().decode('utf-8').rstrip()
-        print(line)     
-        if (line == "0xFF22DD"):
-             if contador_veces%2 == 0: 
-                estado = "pausar"
-                 pausa(False)
-                 pausa()
-
-              else:
-                   estado = "reproducir"
-                   play()
-
-
-          elif (line == "0xFF02FD"):
-               estado = "anterior"
-               previous_song()
-
-
-          elif (line == "0xFFC23D"):
-                estado = "siguiente"
-                next_song()
-
-
-          elif (line == "0xFF906F"):
-                estado = "subir_volumen"
-
-
-          elif (line == "0xFFA857"):
-                estado = "bajar_volumen"
 #executor = ProcessPoolExecutor()
 #executor.map(root.mainloop(), serial_signals())
+root.after(100, serial_signals)
 root.mainloop()
 #root.destroy()
