@@ -1,4 +1,5 @@
 #Archivo completo 4/6/2021
+#800 x 480 resolucion de pantalla raspberrypi
 
 from tkinter import *
 from PIL import ImageTk, Image
@@ -213,7 +214,7 @@ controls_frame_songs = Frame(root)
 controls_frame_songs.pack()
 label_image = Label(controls_frame_songs, image=imagenA, borderwidth=0)
 #Lista de canciones
-song_box = Listbox(controls_frame_songs, bg="black", fg="white", width=300, height= 18, selectbackground="gray", selectforeground="white")
+song_box = Listbox(controls_frame_songs, bg="black", fg="white", width=170, height= 14, selectbackground="gray", selectforeground="white")
 label_image.grid(row=0, column=0)
 song_box.grid(row = 0, column = 1)
 
