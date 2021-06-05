@@ -10,6 +10,9 @@ import os
 import serial
 #from concurrent.futures import ProcessPoolExecutor #Multi-core processing 
 
+#Creacion de serial
+ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 0, writeTimeout=0)
+
 #Estados de las señales
 global state
 state = ""
@@ -125,7 +128,7 @@ def serial_signals():
 
     global state
     contador_veces = 0
-    ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 1, writeTimeout=0)
+    
     ser.flush()
     while True:
         if ser.in_waiting > 0:
@@ -224,6 +227,6 @@ add_song_menu.add_command(label= "Cargar canciones", command=add_song)
 
 #executor = ProcessPoolExecutor()
 #executor.map(root.mainloop(), serial_signals())
-root.after(100, serial_signals)
+root.after(1000, serial_signals)
 root.mainloop()
 #root.destroy()
