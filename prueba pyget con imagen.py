@@ -27,6 +27,7 @@ root.geometry("500x400")
 #Actualizacion de string de temperatura
 global valor
 valor = StringVar()
+valor.set("20")
 
 #Actualizacion de variable temperatura
 global temperatura_valor_signal
@@ -131,6 +132,12 @@ def exit():
     
     pygame.quit()
     sys.exit()
+
+
+#Actualizacion de linea de temperatua en le pantalla
+def updateTemp(temperatura_valor_signal):
+    valor.set("La temperatura actual es: " + str(temperatura_valor_signal) + "°")
+    #temp_text.after(1, updateTemp)
     
 #Recibe las señales del control mientras el mainloop de la raíz se va a ejecutar
 def serial_signals():
@@ -175,13 +182,9 @@ def serial_signals():
             
         else: 
              temperatura_valor_signal = line 
-        
-    root.after(10, serial_signals) 
-
-def updateTemp(temperatura_valor_signal):
-    global valor
-    valor.set("La temperatura actual es: " + str(temperatura_valor_signal) + "°")
-    temp_text.after(1, updateTemp)
+             updateTemp(temperatura_valor_signal) 
+       
+    root.after(10, serial_signals)
 
 imagenA = ImageTk.PhotoImage(Image.open("michael.gif"))
 imagenB = ImageTk.PhotoImage(Image.open("play.png"))
