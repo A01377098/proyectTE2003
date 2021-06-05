@@ -16,7 +16,11 @@ ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 0, writeTimeout=0)
 #Estados de las señales
 global state
 state = ""
-
+global contador_veces
+contador_veces = 0
+global temperatura_valor_signal
+temperatura_valor_signal = 0.0
+global valor
 #Creacion de la raíz
 root = Tk()
 root.title("Música")
@@ -127,13 +131,12 @@ def exit():
 def serial_signals():
 
     global state
-    contador_veces = 0
-    
-    #ser.flush()
+    global contador_veces
+    global temperatura_valor_signal
 
     if ser.in_waiting > 0:
-        line = ser.readline().decode('utf-8').rstrip()
-            
+        line = ser.readline().decode('latin1').rstrip()
+        print(line)
         #if len(line) == 0:
             #break
                      
@@ -164,9 +167,15 @@ def serial_signals():
                     
         elif (line == "0xFFA857"):
             state = "bajar_volumen"
-
+            
+        else: 
+             temperatura_valor_signal = line 
+        
     root.after(10, serial_signals) 
-    
+
+def updateTemp(temperatura_valor_signal):
+    temp_text = Label(control_temp_frame, text = "La temperatura actual es: " + str(temperatura_valor_signal) + "°",borderwidth=0)
+    root.after(15, updateTemp)
 
 imagenA = ImageTk.PhotoImage(Image.open("michael.gif"))
 imagenB = ImageTk.PhotoImage(Image.open("play.png"))
@@ -186,7 +195,7 @@ temp_image = PhotoImage(file = "sunshine.png")
 control_temp_frame = Frame(root)
 control_temp_frame.pack()
 temp = Button(control_temp_frame, image= temp_image , borderwidth= 0)
-temp_text = Label(control_temp_frame, text = "La temperatura actual es: " + str(20.5) + "°",borderwidth=0)
+temp_text = Label(control_temp_frame, text = "La temperatura actual es: " + str(temperatura_valor_signal) + "°",borderwidth=0, command=updateTemp(temperatura_valor_signal))
 temp.grid(row = 0, column= 0)
 temp_text.grid(row = 0, column= 1)
 
