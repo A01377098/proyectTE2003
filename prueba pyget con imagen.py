@@ -129,43 +129,43 @@ def serial_signals():
     global state
     contador_veces = 0
     
-    ser.flush()
-    while True:
-        if ser.in_waiting > 0:
-            line = ser.readline().decode('utf-8').rstrip()
+    #ser.flush()
+
+    if ser.in_waiting > 0:
+        line = ser.readline().decode('utf-8').rstrip()
             
-            if len(line) == 0:
-                break
+        #if len(line) == 0:
+            #break
                      
-            if (line == "0xFF22DD"):
-                contador_veces += 1
-                if  contador_veces%2 == 0: #Se encuentra reproduciendo
-                    state = "pausar"
-                    pausa(False)
-                elif contador_veces%2 != 0: #Indicativo que está en pausa
-                    state = "reproducir"
-                    play()
-                print("Me has seleccionado", contador_veces)
+        if (line == "0xFF22DD"):
+            contador_veces += 1
+            if  contador_veces%2 == 0: #Se encuentra reproduciendo
+                state = "pausar"
+                pausa(False)
+            elif contador_veces%2 != 0: #Indicativo que está en pausa
+                state = "reproducir"
+                play()
+            print("Me has seleccionado", contador_veces)
       
-            elif (line == "0xFF02FD"):
-                state = "anterior"
-                print("hago previous")
-                previous_song()
+        elif (line == "0xFF02FD"):
+            state = "anterior"
+            print("hago previous")
+            previous_song()
                 
                     
-            elif (line == "0xFFC23D"):
-                state = "siguiente"
-                next_song()
+        elif (line == "0xFFC23D"):
+            state = "siguiente"
+            next_song()
 
                     
-            elif (line == "0xFF906F"):
-                state = "subir_volumen"
+        elif (line == "0xFF906F"):
+            state = "subir_volumen"
 
                     
-            elif (line == "0xFFA857"):
-                state = "bajar_volumen"
+        elif (line == "0xFFA857"):
+            state = "bajar_volumen"
 
-        root.after(10, serial_signals) 
+    root.after(10, serial_signals) 
     
 
 imagenA = ImageTk.PhotoImage(Image.open("michael.gif"))
