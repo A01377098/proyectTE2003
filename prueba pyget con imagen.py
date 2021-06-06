@@ -23,7 +23,7 @@ contador_veces = 0
 #Creacion de la raíz
 root = Tk()
 root.title("Música")
-root.geometry("500x400")
+root.geometry("800x480")
 
 #Actualizacion de string de temperatura
 global valor
@@ -234,7 +234,7 @@ playButton.grid(row=0, column=1)
 pauseButton.grid(row=0, column=2)
 stopButton.grid(row=0, column=3)
 forwardButton.grid(row=0, column=4)
-exitButton.grid(row=1, column=2)
+exitButton.grid(row=0, column=5)
 
 menuD=Menu(root)
 root.config(menu=menuD)
