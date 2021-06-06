@@ -56,7 +56,7 @@ def add_song():
     path = os.getcwd() + "/"
     for cancion in lista_Canciones:
         song = path + cancion
-        song_box.insert(END, song)
+        song_box.insert(END, cancion)
 #     song1=song.replace("D:/A_TEC CEM/IRS/4to Semestre/Programacion/Pygame/audio/", " ") 
 #     song1=song1.replace(".mp3", " ")
 
@@ -160,7 +160,6 @@ def serial_signals():
             elif contador_veces%2 != 0: #Indicativo que está en pausa
                 state = "reproducir"
                 play()
-            print("Me has seleccionado", contador_veces)
       
         elif (line == "0xFF02FD"):
             state = "anterior"
@@ -180,10 +179,13 @@ def serial_signals():
         elif (line == "0xFFA857"):
             state = "bajar_volumen"
             
+        elif (line=="1"):
+            add_song()
+            
         else: 
              temperatura_valor_signal = line 
-             updateTemp(temperatura_valor_signal) 
-       
+             updateTemp(temperatura_valor_signal)
+             
     root.after(10, serial_signals)
 
 imagenA = ImageTk.PhotoImage(Image.open("michael.gif"))
