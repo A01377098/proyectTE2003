@@ -13,7 +13,6 @@ import serial
 
 #Creacion de serial
 ser = serial.Serial('/dev/ttyACM0', 9600, timeout = 0, writeTimeout=0)
-
 #Estados de las señales
 global state
 state = ""
@@ -138,9 +137,6 @@ def exit():
 #Actualizacion de linea de temperatua en le pantalla
 def updateTemp(temperatura_valor_signal):
     valor.set("La temperatura actual es: " + str(temperatura_valor_signal) + "°")
-    if temperatura_valor_signal > 30:
-        valor.set("La temperatura actual es: " + str(temperatura_valor_signal) + "°" + "es muy alta: Precaución")
-        serial.write("1")
     #temp_text.after(1, updateTemp)
     
 #Recibe las señales del control mientras el mainloop de la raíz se va a ejecutar
@@ -175,7 +171,6 @@ def serial_signals():
             
         elif (line=="1"):
             add_song()
-            serial.write("1")
             
         else: 
              temperatura_valor_signal = line 
@@ -201,7 +196,7 @@ temp_image = PhotoImage(file = "sunshine.png")
 control_temp_frame = Frame(root)
 control_temp_frame.pack()
 temp = Button(control_temp_frame, image= temp_image , borderwidth= 0)
-temp_text = Label(control_temp_frame, textvariable = "La temperatura actual es: " + valor + "°" + "es muy alta" ,borderwidth=0)
+temp_text = Label(control_temp_frame, textvariable = valor,borderwidth=0)
 temp.grid(row = 0, column= 0)
 temp_text.grid(row = 0, column= 1)
 
